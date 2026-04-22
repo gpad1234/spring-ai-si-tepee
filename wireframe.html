@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring AI — Neon Garden UI Wireframe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design Tokens ────────────────────────────────────────────── */
+    :root {
+      --bg:          #0a0a0f;
+      --surface:     #13131a;
+      --surface2:    #1c1c28;
+      --border:      rgba(255,255,255,0.08);
+      --violet:      #7c3aed;
+      --indigo:      #4f46e5;
+      --cyan:        #06b6d4;
+      --amber:       #f59e0b;
+      --rose:        #f43f5e;
+      --green:       #22c55e;
+      --text:        #e2e8f0;
+      --muted:       #64748b;
+      --glass-bg:    rgba(255,255,255,0.04);
+      --glass-blur:  blur(12px);
+      --radius:      12px;
+      --radius-sm:   8px;
+      --grad:        linear-gradient(135deg, var(--violet), var(--indigo));
+    }
+
+    /* ── Reset ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    code, .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────────── */
+    .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ── Top Nav ─────────────────────────────────────────────────── */
+    .topnav {
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 28px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+    .topnav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+    }
+    .topnav-logo-icon {
+      width: 28px; height: 28px;
+      background: var(--grad);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .topnav-links {
+      display: flex;
+      gap: 4px;
+      margin-left: 12px;
+    }
+    .topnav-link {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      border: none;
+      background: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .topnav-link:hover { color: var(--text); background: var(--glass-bg); }
+    .topnav-link.active {
+      background: var(--grad);
+      color: #fff;
+    }
+    .topnav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--green);
+    }
+    .status-label { font-size: 12px; color: var(--muted); }
+
+    /* ── Body Split ──────────────────────────────────────────────── */
+    .body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ─────────────────────────────────────────────────── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 12px;
+      gap: 4px;
+      overflow-y: auto;
+    }
+    .sidebar-section {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 12px 8px 6px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .sidebar-item:hover { background: var(--glass-bg); color: var(--text); }
+    .sidebar-item.active { background: rgba(124,58,237,0.15); color: var(--text); }
+    .sidebar-item.active .sidebar-dot { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+    .sidebar-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .sidebar-history-item {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.15s;
+    }
+    .sidebar-history-item:hover { background: var(--glass-bg); color: var(--text); }
+
+    /* ── Main ────────────────────────────────────────────────────── */
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── Views ───────────────────────────────────────────────────── */
+    .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .view.active { display: flex; }
+
+    /* ── View: Chat ──────────────────────────────────────────────── */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .message { display: flex; flex-direction: column; max-width: 70%; gap: 6px; }
+    .message.user { align-self: flex-end; align-items: flex-end; }
+    .message.ai { align-self: flex-start; align-items: flex-start; }
+    .message-role {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      line-height: 1.6;
+    }
+    .bubble.user {
+      background: var(--grad);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble.ai {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .typing-indicator {
+      display: flex; gap: 5px; align-items: center;
+      padding: 12px 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: var(--cyan);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+    .chat-footer {
+      padding: 16px 40px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .system-prompt-toggle {
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .system-prompt-toggle:hover { color: var(--text); }
+    .system-prompt-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .input-area {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      resize: none;
+      min-height: 48px;
+      max-height: 140px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .input-area:focus { border-color: var(--violet); }
+    .input-area::placeholder { color: var(--muted); }
+    .send-btn {
+      height: 48px; width: 48px;
+      background: var(--grad);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+
+    /* ── View: Stream ────────────────────────────────────────────── */
+    .stream-cursor {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: var(--amber);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .bubble.ai.streaming {
+      border-left: 3px solid var(--violet);
+      box-shadow: -2px 0 12px rgba(124,58,237,0.3);
+    }
+
+    /* ── View: Extract ───────────────────────────────────────────── */
+    .extract-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .extract-left {
+      width: 45%;
+      flex-shrink: 0;
+      padding: 28px 24px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .extract-right {
+      flex: 1;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pill-tabs { display: flex; gap: 6px; }
+    .pill {
+      padding: 5px 16px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .pill.active {
+      background: var(--grad);
+      border-color: transparent;
+      color: #fff;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .extract-textarea {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      resize: none;
+      outline: none;
+      min-height: 180px;
+      transition: border-color 0.15s;
+      line-height: 1.6;
+    }
+    .extract-textarea:focus { border-color: var(--violet); }
+    .extract-textarea::placeholder { color: var(--muted); }
+    .extract-btn {
+      padding: 10px 20px;
+      background: var(--grad);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: opacity 0.15s;
+    }
+    .extract-btn:hover { opacity: 0.85; }
+    .json-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      flex: 1;
+      position: relative;
+      overflow: auto;
+    }
+    .json-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .json-card-title { font-weight: 600; font-size: 13px; }
+    .copy-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--violet); }
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .field-key { color: var(--cyan); font-size: 13px; min-width: 80px; }
+    .field-badge {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .field-badge.filled { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .field-badge.empty { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid rgba(100,116,139,0.3); }
+
+    /* ── View: RAG ───────────────────────────────────────────────── */
+    .rag-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .rag-col {
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .rag-col-1 { width: 26%; border-right: 1px solid var(--border); }
+    .rag-col-2 { width: 28%; border-right: 1px solid var(--border); }
+    .rag-col-3 { flex: 1; }
+    .col-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .drop-zone {
+      flex: 1;
+      min-height: 160px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      padding: 20px;
+      text-align: center;
+    }
+    .drop-zone:hover { border-color: var(--violet); background: rgba(124,58,237,0.05); }
+    .drop-zone-icon { font-size: 28px; }
+    .drop-zone-text { font-size: 12px; color: var(--muted); }
+    .drop-zone-text span { color: var(--violet); cursor: pointer; }
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .doc-icon { font-size: 16px; }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-size { font-size: 11px; color: var(--muted); }
+    .doc-tick { color: var(--green); font-size: 14px; }
+    .rag-answer-area {
+      flex: 1;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 140px;
+    }
+    .sources-toggle {
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sources-toggle:hover { color: var(--cyan); }
+    .source-chunk {
+      background: var(--surface2);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── View: Tools ─────────────────────────────────────────────── */
+    .tools-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .tools-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .tools-panel {
+      width: 280px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .tools-panel-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .tools-panel-body { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .tool-badge {
+      background: rgba(6,182,212,0.08);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .tool-badge-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .tool-spark { color: var(--cyan); font-size: 14px; }
+    .tool-name { font-size: 12px; font-weight: 600; color: var(--cyan); }
+    .tool-kv { display: flex; gap: 6px; font-size: 11px; margin-bottom: 4px; }
+    .tool-k { color: var(--muted); min-width: 44px; }
+    .tool-v { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+    .tools-panel-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      margin: 12px;
+    }
+
+    /* ── Shared Utilities ────────────────────────────────────────── */
+    .view-header {
+      padding: 20px 40px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .view-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .view-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .badge-violet { background: rgba(124,58,237,0.15); color: var(--violet); border: 1px solid rgba(124,58,237,0.25); }
+    .badge-cyan   { background: rgba(6,182,212,0.12); color: var(--cyan);   border: 1px solid rgba(6,182,212,0.25); }
+    .badge-amber  { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .badge-rose   { background: rgba(244,63,94,0.12);  color: var(--rose);  border: 1px solid rgba(244,63,94,0.25); }
+    .badge-green  { background: rgba(34,197,94,0.12);  color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+    .divider { height: 1px; background: var(--border); }
+    .spacer { flex: 1; }
+
+    /* ── Approval Banner ─────────────────────────────────────────── */
+    .approval-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .approval-label { font-size: 12px; color: var(--muted); }
+    .approval-label strong { color: var(--text); }
+    .approval-btn {
+      padding: 7px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .approval-btn:hover { opacity: 0.8; }
+    .approval-btn.approve { background: var(--green); color: #fff; }
+    .approval-btn.revise  { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .approval-spacer { flex: 1; }
+
+    /* ── Scrollbar ───────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── Top Nav ─────────────────────────────────────────────── -->
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <div class="topnav-logo-icon">✦</div>
+      Spring AI
+    </div>
+    <div class="topnav-links">
+      <button class="topnav-link active" onclick="switchView('chat',this)">Chat</button>
+      <button class="topnav-link" onclick="switchView('stream',this)">Stream</button>
+      <button class="topnav-link" onclick="switchView('extract',this)">Extract</button>
+      <button class="topnav-link" onclick="switchView('rag',this)">RAG</button>
+      <button class="topnav-link" onclick="switchView('tools',this)">Tools</button>
+    </div>
+    <div class="topnav-right">
+      <div class="status-dot"></div>
+      <span class="status-label">API connected</span>
+    </div>
+  </nav>
+
+  <!-- ─── Body ────────────────────────────────────────────────── -->
+  <div class="body">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-section">Patterns</div>
+      <div class="sidebar-item active" onclick="switchView('chat', document.querySelectorAll('.topnav-link')[0])">
+        <div class="sidebar-dot"></div> Simple Chat
+      </div>
+      <div class="sidebar-item" onclick="switchView('stream', document.querySelectorAll('.topnav-link')[1])">
+        <div class="sidebar-dot"></div> Streaming
+      </div>
+      <div class="sidebar-item" onclick="switchView('extract', document.querySelectorAll('.topnav-link')[2])">
+        <div class="sidebar-dot"></div> Structured Output
+      </div>
+      <div class="sidebar-item" onclick="switchView('rag', document.querySelectorAll('.topnav-link')[3])">
+        <div class="sidebar-dot"></div> RAG
+      </div>
+      <div class="sidebar-item" onclick="switchView('tools', document.querySelectorAll('.topnav-link')[4])">
+        <div class="sidebar-dot"></div> Tool Calling
+      </div>
+
+      <div class="sidebar-section" style="margin-top:8px;">Recent</div>
+      <div class="sidebar-history-item">What is Spring AI?</div>
+      <div class="sidebar-history-item">Explain RAG in 3 sentences</div>
+      <div class="sidebar-history-item">Extract: Alice Smith, 32...</div>
+      <div class="sidebar-history-item">What does the doc say about X?</div>
+      <div class="sidebar-history-item">Weather in Tokyo today</div>
+
+      <div class="spacer"></div>
+
+      <div style="padding: 8px; background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-radius: var(--radius-sm); font-size: 11px; color: var(--muted);">
+        <span style="color:var(--violet); font-weight:600;">claude-3-5-sonnet</span><br/>
+        Anthropic · API key set
+      </div>
+    </aside>
+
+    <!-- ── Main ─────────────────────────────────────────────── -->
+    <main class="main">
+
+      <!-- ── View 1: Chat ─────────────────────────────────── -->
+      <div id="view-chat" class="view active">
+        <div class="view-header" style="padding-bottom:16px;">
+          <div>
+            <div class="view-title">Simple Chat</div>
+            <div class="view-subtitle">Stateless Q&amp;A — one turn, no history retained</div>
+          </div>
+          <span class="badge badge-violet">POST /api/chat</span>
+        </div>
+        <div class="divider"></div>
+        <div class="chat-messages">
+          <div class="message user">
+            <div class="message-role">You</div>
+            <div class="bubble user">What is Spring AI and how does it differ from LangChain4j?</div>
+          </div>
+          <div class="message ai">
+            <div class="message-role">Claude</div>
+            <div class="bubble ai">
+              <strong>Spring AI</strong> is a framework that brings AI capabilities natively into the Spring ecosystem.
+              It provides a consistent abstraction layer over multiple AI providers — Anthropic, OpenAI, Ollama,
+              and others — through a unified <code>ChatClient</code> API.<br/><br/>
+              <strong>Key differences from LangChain4j:</strong>
+              <ul style="margin: 8px 0 0 16px; display:flex; flex-direction:column; gap:4px;">
+                <li>Spring AI integrates directly with Spring Boot autoconfiguration and dependency injection.</li>
+                <li>It uses Spring's advisor pattern for cross-cutting concerns (RAG, memory, logging).</li>
+                <li>LangChain4j is framework-agnostic; Spring AI is opinionated about the Spring context.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="message user">
+            <div class="message-role">You</div>
+            <div class="bubble user">Can I use it with virtual threads?</div>
+          </div>
+          <div class="message ai">
+            <div class="message-role">Claude</div>
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <div class="system-prompt-toggle" onclick="toggleSystemPrompt()">
+            ▸ <span id="sys-label">System prompt (click to expand)</span>
+          </div>
+          <div id="system-prompt-box" class="system-prompt-box" style="display:none;">
+            You are a helpful assistant specialising in Spring AI and Java development. Be concise and precise.
+          </div>
+          <div class="input-row">
+            <textarea class="input-area" placeholder="Ask anything… (⌘↵ to send)" rows="1"></textarea>
+            <button class="send-btn">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── View 2: Stream ───────────────────────────────── -->
+      <div id="view-stream" class="view">
+        <div class="view-header" style="padding-bottom:16px;">
+          <div>
+            <div class="view-title">Streaming</div>
+            <div class="view-subtitle">Tokens appear as they arrive over Server-Sent Events</div>
+          </div>
+          <span class="badge badge-amber">POST /api/stream · SSE</span>
+        </div>
+        <div class="divider"></div>
+        <div class="chat-messages">
+          <div class="message user">
+            <div class="message-role">You</div>
+            <div class="bubble user">Explain retrieval-augmented generation in 3 sentences.</div>
+          </div>
+          <div class="message ai">
+            <div class="message-role">Claude · streaming</div>
+            <div class="bubble ai streaming">
+              Retrieval-Augmented Generation (RAG) enhances a language model by first retrieving
+              relevant passages from an external knowledge base — using semantic similarity search
+              over a vector store — and then injecting those passages into the model's prompt as
+              grounding context. This allows the model to answer questions about private or
+              up-to-date information it was not trained on, reducing hallucination by anchoring
+              responses in retrieved facts. The retrieval step uses embedding models to convert both
+              the query and stored documents into high-dimensional vectors, measuring closeness via
+              cosine similarity<span class="stream-cursor"></span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <div class="input-row">
+            <textarea class="input-area" placeholder="Ask anything… (⌘↵ to send, Esc to cancel stream)" rows="1"></textarea>
+            <button class="send-btn">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── View 3: Extract ──────────────────────────────── -->
+      <div id="view-extract" class="view">
+        <div class="view-header" style="padding-bottom:16px;">
+          <div>
+            <div class="view-title">Structured Output</div>
+            <div class="view-subtitle">Extract typed entities from free-form text</div>
+          </div>
+          <span class="badge badge-cyan">POST /api/extract/{type}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="extract-layout">
+          <div class="extract-left">
+            <div>
+              <div class="section-label">Entity type</div>
+              <div class="pill-tabs" style="margin-top:6px;">
+                <button class="pill active">Person</button>
+                <button class="pill">Product</button>
+              </div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <div class="section-label">Input text</div>
+              <textarea class="extract-textarea" placeholder="Paste any free-form text…">Alice Smith, 32 years old, lives in Berlin. You can reach her at alice@example.com or on her mobile. She works as a senior software engineer at a fintech startup.</textarea>
+            </div>
+            <button class="extract-btn">Extract ▶</button>
+          </div>
+          <div class="extract-right">
+            <div>
+              <div class="section-label">Extracted entity — PersonRecord</div>
+            </div>
+            <div class="json-card">
+              <div class="json-card-header">
+                <span class="json-card-title">PersonRecord</span>
+                <button class="copy-btn">⎘ Copy JSON</button>
+              </div>
+              <div class="field-row">
+                <span class="field-key mono">name</span>
+                <span class="field-badge filled">"Alice Smith"</span>
+              </div>
+              <div class="field-row">
+                <span class="field-key mono">age</span>
+                <span class="field-badge filled">32</span>
+              </div>
+              <div class="field-row">
+                <span class="field-key mono">email</span>
+                <span class="field-badge filled">"alice@example.com"</span>
+              </div>
+              <div class="field-row">
+                <span class="field-key mono">city</span>
+                <span class="field-badge filled">"Berlin"</span>
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--muted);">
+              <span style="color:var(--green);">●</span> Filled &nbsp;&nbsp;
+              <span style="color:var(--muted);">●</span> Null / not found
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── View 4: RAG ───────────────────────────────────── -->
+      <div id="view-rag" class="view">
+        <div class="view-header" style="padding-bottom:16px;">
+          <div>
+            <div class="view-title">RAG — Document Q&amp;A</div>
+            <div class="view-subtitle">Ingest documents, then ask grounded questions</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <span class="badge badge-violet">POST /api/rag/ingest</span>
+            <span class="badge badge-violet">POST /api/rag/ask</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="rag-layout">
+          <!-- Col 1: Drop zone -->
+          <div class="rag-col rag-col-1">
+            <div class="col-title">1. Upload documents</div>
+            <div style="font-size:12px;color:var(--muted);">PDF, TXT, or Markdown</div>
+            <div class="drop-zone">
+              <div class="drop-zone-icon">📄</div>
+              <div class="drop-zone-text">
+                Drag files here<br/>or <span>browse</span>
+              </div>
+            </div>
+            <button class="extract-btn" style="align-self:stretch;text-align:center;">
+              Ingest selected
+            </button>
+          </div>
+          <!-- Col 2: Document list -->
+          <div class="rag-col rag-col-2">
+            <div class="col-title">2. Ingested documents</div>
+            <div class="doc-item">
+              <div class="doc-icon">📑</div>
+              <div class="doc-info">
+                <div class="doc-name">architecture-overview.pdf</div>
+                <div class="doc-size">142 KB · 18 chunks</div>
+              </div>
+              <div class="doc-tick">✓</div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-icon">📝</div>
+              <div class="doc-info">
+                <div class="doc-name">release-notes-v2.txt</div>
+                <div class="doc-size">38 KB · 7 chunks</div>
+              </div>
+              <div class="doc-tick">✓</div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-icon">📋</div>
+              <div class="doc-info">
+                <div class="doc-name">api-spec.md</div>
+                <div class="doc-size">61 KB · 12 chunks</div>
+              </div>
+              <div class="doc-tick">✓</div>
+            </div>
+            <div class="spacer"></div>
+            <button class="approval-btn revise" style="font-size:11px;">Clear all</button>
+          </div>
+          <!-- Col 3: Q&A -->
+          <div class="rag-col rag-col-3">
+            <div class="col-title">3. Ask a question</div>
+            <div class="input-row">
+              <input type="text" class="input-area" style="min-height:40px;height:40px;" placeholder="What does the document say about…" value="What authentication methods are described in the API spec?" />
+              <button class="send-btn" style="height:40px;width:40px;font-size:14px;">➤</button>
+            </div>
+            <div class="section-label">Answer</div>
+            <div class="rag-answer-area">
+              The API specification describes <strong>three authentication methods</strong>:
+              Bearer token (JWT), API key via the <code>X-API-Key</code> header, and OAuth 2.0
+              client credentials flow for service-to-service calls. JWT tokens expire after
+              3600 seconds and must be refreshed using the <code>/auth/refresh</code> endpoint.
+            </div>
+            <div class="sources-toggle">▸ 3 source chunks used (click to expand)</div>
+            <div class="source-chunk">
+              "…Authentication is handled via a Bearer token passed in the Authorization header.
+              Tokens are JWT-encoded and expire after 3600 seconds…"
+              <span style="color:var(--cyan);font-size:10px;margin-left:6px;">api-spec.md · chunk 4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── View 5: Tools ─────────────────────────────────── -->
+      <div id="view-tools" class="view">
+        <div class="tools-layout">
+          <div class="tools-chat">
+            <div class="view-header" style="padding-bottom:16px;">
+              <div>
+                <div class="view-title">Tool Calling</div>
+                <div class="view-subtitle">Claude invokes registered Java methods at runtime</div>
+              </div>
+              <span class="badge badge-cyan">POST /api/tools/chat</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chat-messages">
+              <div class="message user">
+                <div class="message-role">You</div>
+                <div class="bubble user">What's the weather in Tokyo, and what time is it there right now?</div>
+              </div>
+              <div class="message ai">
+                <div class="message-role">Claude · used 2 tools</div>
+                <div class="bubble ai">
+                  In <strong>Tokyo</strong> right now it's <strong>22°C and sunny</strong> with
+                  light easterly winds. The local time is <strong>09:47 JST</strong>
+                  (UTC+9), so it's a pleasant mid-morning. A great day to be outside!
+                </div>
+              </div>
+            </div>
+            <div class="chat-footer">
+              <div class="input-row">
+                <textarea class="input-area" placeholder="Ask anything that may need a tool… (⌘↵ to send)" rows="1"></textarea>
+                <button class="send-btn">➤</button>
+              </div>
+            </div>
+          </div>
+          <!-- Tool panel -->
+          <div class="tools-panel">
+            <div class="tools-panel-header">Tool calls this turn</div>
+            <div class="tools-panel-body">
+              <div class="tool-badge">
+                <div class="tool-badge-header">
+                  <span class="tool-spark">⚡</span>
+                  <span class="tool-name">getCurrentWeather</span>
+                </div>
+                <div class="tool-kv"><span class="tool-k">args</span><span class="tool-v">{ city: "Tokyo" }</span></div>
+                <div class="tool-kv"><span class="tool-k">result</span><span class="tool-v">22°C, sunny</span></div>
+              </div>
+              <div class="tool-badge">
+                <div class="tool-badge-header">
+                  <span class="tool-spark">⚡</span>
+                  <span class="tool-name">getCurrentDateTime</span>
+                </div>
+                <div class="tool-kv"><span class="tool-k">args</span><span class="tool-v">{ tz: "Asia/Tokyo" }</span></div>
+                <div class="tool-kv"><span class="tool-k">result</span><span class="tool-v">2026-04-22T09:47+09:00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main><!-- /main -->
+  </div><!-- /body -->
+
+  <!-- ─── Approval Bar ────────────────────────────────────────── -->
+  <div class="approval-bar">
+    <div class="approval-label">
+      <strong>Wireframe v1.0</strong> — Spring AI · Neon Garden UI · April 2026
+    </div>
+    <div style="display:flex;gap:6px;margin-left:16px;font-size:11px;color:var(--muted);align-items:center;">
+      <span class="badge badge-violet">Next.js 15</span>
+      <span class="badge badge-cyan">Tailwind v4</span>
+      <span class="badge badge-amber">Framer Motion</span>
+      <span class="badge badge-green">shadcn/ui</span>
+    </div>
+    <div class="approval-spacer"></div>
+    <button class="approval-btn revise" onclick="alert('Feedback noted — please describe the revisions needed.')">Request Revisions</button>
+    <button class="approval-btn approve" onclick="alert('Design approved! ✓ Ready to move to Phase 6 implementation.')">Approve Design ✓</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+  function switchView(name, btn) {
+    // Update views
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    // Update nav buttons
+    document.querySelectorAll('.topnav-link').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    // Update sidebar
+    const labels = { chat: 'Simple Chat', stream: 'Streaming', extract: 'Structured Output', rag: 'RAG', tools: 'Tool Calling' };
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.classList.toggle('active', item.textContent.trim() === labels[name]);
+    });
+  }
+
+  function toggleSystemPrompt() {
+    const box = document.getElementById('system-prompt-box');
+    const label = document.getElementById('sys-label');
+    const visible = box.style.display !== 'none';
+    box.style.display = visible ? 'none' : 'block';
+    document.querySelector('.system-prompt-toggle').childNodes[0].textContent = visible ? '▸ ' : '▾ ';
+    label.textContent = visible ? 'System prompt (click to expand)' : 'System prompt (click to collapse)';
+  }
+
+  // Pill tab toggle on Extract view
+  document.querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      p.closest('.pill-tabs').querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
