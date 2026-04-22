@@ -245,6 +245,10 @@ with `mvn test -Dgroups=integration`.
 | Testing | JUnit 5, Mockito, spring-ai-test | Spring Boot Test |
 | Observability | Micrometer, Spring Boot Actuator | via Spring Boot |
 | Prompt templates | StringTemplate 4 (`.st` files) | via Spring AI |
+| **UI framework** | **Next.js 15 (App Router)** | **React 19, TypeScript 5** |
+| **UI styling** | **Tailwind CSS v4 + shadcn/ui** | **Radix UI primitives** |
+| **UI animation** | **Framer Motion 11** | **Token stream, transitions** |
+| **UI data fetching** | **TanStack Query 5** | **Async state management** |
 
 ---
 
@@ -292,6 +296,226 @@ with `mvn test -Dgroups=integration`.
 | Change a prompt | Edit the `.st` file in `src/main/resources/prompts/` |
 | Add conversation memory | Use `MessageWindowChatMemory` advisor in `ChatClient` |
 | Add multi-modal input | Pass `Media` objects into the `user()` block |
+| Change UI theme | Edit `ui/tailwind.config.ts` — all colours are CSS variables |
+| Point UI at a different API | Set `NEXT_PUBLIC_API_BASE_URL` in `ui/.env.local` |
+
+---
+
+## 8. User Interface
+
+### 8.1 Design Language — "Neon Garden"
+
+The UI is dark-first with vivid accent colours that make AI activity feel alive. Key
+principles:
+
+- **Dark canvas** `#0a0a0f` — near-black with a cool blue undertone.
+- **Violet → indigo gradient** `#7c3aed → #4f46e5` — primary brand colour, used on
+  buttons, active nav items, and streaming cursors.
+- **Cyan spark** `#06b6d4` — secondary accent for tool invocation badges and highlights.
+- **Glassmorphism surfaces** — cards use `backdrop-blur-md` + `bg-white/5` so the dark
+  background bleeds through slightly.
+- **Amber pulse** `#f59e0b` — animated blinking cursor while tokens stream in.
+- **Rose** `#f43f5e` — errors and destructive actions only.
+- **Typography** — Inter (body) + JetBrains Mono (code blocks, JSON output, tool args).
+- **Motion** — subtle: 150 ms ease-out transitions; token stream character-by-character
+  reveal via Framer Motion; page transitions are slide-in from the right.
+
+### 8.2 Application Shell
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ◈ Spring AI  [Chat] [Stream] [Extract] [RAG] [Tools]  ···  │  ← Top nav bar
+├──────────────┬──────────────────────────────────────────────┤
+│              │                                              │
+│  Sidebar     │            Main content area                 │
+│  (pattern    │            (page-specific)                   │
+│   switcher   │                                              │
+│   + history) │                                              │
+│              │                                              │
+└──────────────┴──────────────────────────────────────────────┘
+```
+
+The sidebar collapses to icon-only on viewports narrower than 1024 px. Each nav item
+glows with the violet accent when active. History (last 20 inputs) is stored in
+`localStorage` — no backend session required.
+
+### 8.3 Views
+
+#### View 1 — Chat (`/chat`)
+
+Full-screen conversational UI. Matches the mental model users have from consumer chat apps.
+
+- Message bubbles: user messages right-aligned (violet background), AI messages
+  left-aligned (glass card).
+- Markdown rendered inside AI bubbles (headings, bold, code blocks, lists).
+- Typing indicator (three bouncing dots, cyan) while waiting for the first token.
+- Input bar pinned to bottom with a send button and an optional system-prompt drawer
+  (collapsed by default, expand with a chevron).
+- **Pattern used:** `POST /api/chat`
+
+#### View 2 — Stream (`/stream`)
+
+Identical layout to Chat but every token appears individually as it arrives over SSE.
+A blinking amber cursor sits at the end of the in-progress response. Once the stream
+ends the cursor fades out.
+
+- Uses the browser's native `EventSource` API — no polling, no long-polling.
+- A subtle left-border glow (violet) pulses on the AI bubble while the stream is open.
+- **Pattern used:** `POST /api/stream` (`text/event-stream`)
+
+#### View 3 — Extract (`/extract`)
+
+Split-pane layout:
+
+```
+┌──────────────────────┬──────────────────────────────────────┐
+│  Free text input     │  Extracted entity card               │
+│                      │                                      │
+│  [Person] [Product]  │  { name: "Alice Smith"               │
+│  toggle tabs         │    age: 32                           │
+│                      │    email: "alice@example.com"        │
+│  [Text area]         │    city: "Berlin" }                  │
+│                      │                                      │
+│  [Extract ▶]         │  Field badges: green = filled        │
+│                      │             grey  = null/missing     │
+└──────────────────────┴──────────────────────────────────────┘
+```
+
+- Entity type is selected via pill tabs (Person / Product). More tabs can be added
+  as new records are implemented on the backend.
+- The right panel renders the JSON as a styled card with coloured field badges —
+  green for extracted values, grey for nulls — so partial extraction is immediately
+  visible.
+- A copy-to-clipboard button (top-right of the card) copies the raw JSON.
+- **Pattern used:** `POST /api/extract/person`, `POST /api/extract/product`
+
+#### View 4 — RAG (`/rag`)
+
+Three-column layout:
+
+```
+┌───────────────┬────────────────────────┬───────────────────┐
+│  Drop zone    │  Document list         │  Q&A chat         │
+│               │                        │                   │
+│  Drag a PDF,  │  ● report.pdf   ✓      │  [Question input] │
+│  TXT, or MD   │  ● notes.txt    ✓      │  [Ask ▶]          │
+│  here, or     │  ● spec.md      ✓      │                   │
+│  [Browse]     │                        │  Answer with      │
+│               │  [Clear all]           │  source chunks    │
+│               │                        │  highlighted      │
+└───────────────┴────────────────────────┴───────────────────┘
+```
+
+- Drop zone accepts PDF, TXT, and Markdown. A progress ring shows ingestion status.
+- The document list shows file name, size, and a green tick once ingestion completes.
+  Ingested documents persist in `localStorage` metadata (names only — actual data is
+  in the vector store).
+- The answer panel optionally shows the retrieved source chunks below the answer,
+  collapsed by default, expandable.
+- **Pattern used:** `POST /api/rag/ingest`, `POST /api/rag/ask`
+
+#### View 5 — Tools (`/tools`)
+
+Chat interface with a collapsible side panel that shows every tool invocation in the
+current turn:
+
+```
+┌────────────────────────────────┬────────────────────────────┐
+│  Chat (same as View 1)         │  Tool calls this turn      │
+│                                │                            │
+│  User: "What's the weather     │  ⚡ getCurrentWeather       │
+│         in Tokyo?"             │     args: { city: Tokyo }  │
+│                                │     result: 22°C, sunny    │
+│  AI: "It's 22°C and sunny in   │                            │
+│       Tokyo today."            │  ⚡ getCurrentDateTime      │
+│                                │     args: {}               │
+│  [Input bar]                   │     result: 2026-04-22...  │
+└────────────────────────────────┴────────────────────────────┘
+```
+
+- Each tool invocation renders as a cyan badge in the side panel with the tool name,
+  serialised args, and the raw return value.
+- The panel is empty when no tools have been called and shows a subtle dashed border.
+- **Pattern used:** `POST /api/tools/chat`
+
+### 8.4 Tech Stack (UI)
+
+| Technology | Version | Role |
+|---|---|---|
+| Next.js | 15 (App Router) | Framework — routing, SSR, API proxy |
+| React | 19 | UI rendering |
+| TypeScript | 5 | Type safety |
+| Tailwind CSS | v4 | Utility-first styling, design tokens |
+| shadcn/ui | latest | Accessible component primitives (Radix UI) |
+| Framer Motion | 11 | Token stream animation, transitions |
+| TanStack Query | 5 | Async state, mutation loading states |
+| `EventSource` | browser native | SSE streaming (View 2) |
+| React Markdown | 9 | Markdown rendering in chat bubbles |
+| Inter | via `next/font` | Body typeface |
+| JetBrains Mono | via `next/font` | Monospace / code blocks |
+
+### 8.5 Project Structure (UI)
+
+```
+ui/
+├── app/
+│   ├── layout.tsx            global shell: top nav, sidebar, theme provider
+│   ├── page.tsx              redirect → /chat
+│   ├── chat/page.tsx
+│   ├── stream/page.tsx
+│   ├── extract/page.tsx
+│   ├── rag/page.tsx
+│   └── tools/page.tsx
+├── components/
+│   ├── layout/
+│   │   ├── TopNav.tsx
+│   │   └── Sidebar.tsx
+│   ├── chat/
+│   │   ├── MessageBubble.tsx
+│   │   ├── InputBar.tsx
+│   │   └── TypingIndicator.tsx
+│   ├── stream/
+│   │   └── StreamPane.tsx    uses EventSource + useStreamTokens hook
+│   ├── extract/
+│   │   ├── ExtractForm.tsx
+│   │   └── JsonCard.tsx
+│   ├── rag/
+│   │   ├── DropZone.tsx
+│   │   ├── DocumentList.tsx
+│   │   └── RagChat.tsx
+│   └── tools/
+│       ├── ToolChat.tsx
+│       └── ToolCallBadge.tsx
+├── hooks/
+│   ├── useChat.ts            wraps POST /api/chat
+│   ├── useStream.ts          wraps EventSource → POST /api/stream
+│   ├── useExtract.ts         wraps POST /api/extract/*
+│   ├── useRag.ts             wraps ingest + ask
+│   └── useTools.ts           wraps POST /api/tools/chat
+├── lib/
+│   ├── api.ts                typed fetch wrappers for all 5 backend endpoints
+│   └── cn.ts                 clsx + tailwind-merge utility
+├── public/
+└── tailwind.config.ts        design tokens (colours, fonts, animation)
+```
+
+### 8.6 Backend Integration
+
+The UI runs on `http://localhost:3000` in development. The Spring Boot API runs on
+`http://localhost:8080`. Two options for connecting them:
+
+**Option A — Next.js API proxy (recommended for dev)**  
+Add a `rewrites()` rule in `next.config.ts`:
+```ts
+async rewrites() {
+  return [{ source: '/api/:path*', destination: 'http://localhost:8080/api/:path*' }]
+}
+```
+The browser never sees cross-origin requests. No CORS configuration needed on the backend.
+
+**Option B — CORS on the backend (recommended for prod separation)**  
+Add a `CorsConfigurationSource` bean in `AiConfig` allowing the UI origin. Set
+`NEXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com` in the production environment.
 
 ---
 
