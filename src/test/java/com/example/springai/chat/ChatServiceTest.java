@@ -28,9 +28,8 @@ class ChatServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Use Spring AI's test mock model for deterministic responses
-        var mockModel = org.springframework.ai.chat.model.ChatModel.builder()
-                .build();  // Replace with MockChatModel when available in your AI test dependency
+        // Use Mockito to create a mock ChatModel — no real API calls
+        var mockModel = mock(ChatModel.class);
 
         var client = ChatClient.builder(mockModel)
                 .defaultSystem("You are a test assistant.")

@@ -1,0 +1,15 @@
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/SpringAiApplication.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/chat/ChatController.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/chat/ChatService.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/config/AiConfig.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/config/HashEmbeddingModel.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/rag/DocumentIngestionService.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/rag/RagController.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/rag/RagService.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/streaming/StreamingController.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/streaming/StreamingService.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/structured/StructuredOutputController.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/structured/StructuredOutputService.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/tools/BuiltInTools.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/tools/ToolCallingController.java
+/Users/gp/claude-code/spring-ai-s1/src/main/java/com/example/springai/tools/ToolCallingService.java

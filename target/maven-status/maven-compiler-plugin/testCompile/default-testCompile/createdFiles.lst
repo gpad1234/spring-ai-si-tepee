@@ -1,0 +1,3 @@
+com/example/springai/chat/ChatServiceTest.class
+com/example/springai/structured/StructuredOutputServiceTest.class
+com/example/springai/rag/DocumentIngestionServiceTest.class

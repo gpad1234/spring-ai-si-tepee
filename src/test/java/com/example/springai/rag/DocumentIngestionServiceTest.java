@@ -28,7 +28,7 @@ class DocumentIngestionServiceTest {
                 .thenReturn(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.dimensions()).thenReturn(3);
 
-        VectorStore vectorStore = new SimpleVectorStore(embeddingModel);
+        VectorStore vectorStore = SimpleVectorStore.builder(embeddingModel).build();
         DocumentIngestionService service = new DocumentIngestionService(vectorStore);
 
         String longText = "Spring AI provides abstractions for AI engineering. ".repeat(50);

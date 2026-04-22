@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Production swap points:
  * <ul>
+ *   <li>Replace {@link HashEmbeddingModel} with an API-backed model (e.g. OpenAI
+ *       text-embedding-3-small) or the transformers starter for semantic accuracy.</li>
  *   <li>Replace {@link SimpleVectorStore} with PgVectorStore, ChromaVectorStore, etc.</li>
  *   <li>Add {@code ChatMemory} bean here for shared conversation state.</li>
  * </ul>
@@ -22,8 +24,6 @@ public class AiConfig {
 
     /**
      * Default {@link ChatClient} with a system prompt applied to all requests.
-     * Controllers that need different system prompts should inject
-     * {@link ChatClient.Builder} and build their own.
      */
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
@@ -33,11 +33,19 @@ public class AiConfig {
     }
 
     /**
+     * Zero-native-dependency embedding model — deterministic SHA-256 hash vectors.
+     * Swap for a real API-backed model in production for meaningful semantic search.
+     */
+    @Bean
+    public EmbeddingModel embeddingModel() {
+        return new HashEmbeddingModel();
+    }
+
+    /**
      * In-memory vector store for development / demos.
-     * Swap the implementation without changing any service code.
      */
     @Bean
     public VectorStore vectorStore(EmbeddingModel embeddingModel) {
-        return new SimpleVectorStore(embeddingModel);
+        return SimpleVectorStore.builder(embeddingModel).build();
     }
 }
