@@ -1,47 +1,62 @@
 package com.example.springai.chat;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Unit test for {@link ChatService}.
  *
- * <p>Uses Spring AI's {@code MockChatModel} (from {@code spring-ai-test}) for
- * deterministic, offline testing — no real API calls.
+ * <p>Tests the service layer business logic: input validation and ChatClient delegation.
  *
- * <p>Testing strategy:
- * <ul>
- *   <li>Unit tests mock the {@link ChatModel} — fast, no network.</li>
- *   <li>Integration tests ({@code @SpringBootTest}) use real API with a test key
- *       and are tagged {@code @Tag("integration")} to run only in CI.</li>
- * </ul>
+ * <p>Design note: The ChatService is very thin — it validates input and delegates to ChatClient.
+ * Most of the behavior is verified through controller and integration tests.
+ * This test focuses on the contract: invalid input should be rejected.
  */
 class ChatServiceTest {
 
-    private ChatService chatService;
+    @Test
+    void chatWithNullMessageThrowsException() {
+        // Verify input validation: null message should be rejected
+        var mockChatClient = mock(ChatClient.class);
+        var mockBuilder = mock(ChatClient.Builder.class);
+        var service = new ChatService(mockChatClient, mockBuilder);
 
-    @BeforeEach
-    void setUp() {
-        // Use Mockito to create a mock ChatModel — no real API calls
-        var mockModel = mock(ChatModel.class);
-
-        var client = ChatClient.builder(mockModel)
-                .defaultSystem("You are a test assistant.")
-                .build();
-
-        chatService = new ChatService(client, ChatClient.builder(mockModel));
+        assertThatThrownBy(() -> service.chat(null, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Message cannot be blank");
     }
 
     @Test
-    void chatReturnsNonEmptyString() {
-        // When testing against a real model: wire up ChatClient with a real key via @SpringBootTest
-        // This stub demonstrates the test structure
-        assertThat(chatService).isNotNull();
+    void chatWithBlankMessageThrowsException() {
+        // Verify input validation: blank message should be rejected
+        var mockChatClient = mock(ChatClient.class);
+        var mockBuilder = mock(ChatClient.Builder.class);
+        var service = new ChatService(mockChatClient, mockBuilder);
+
+        assertThatThrownBy(() -> service.chat("   ", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Message cannot be blank");
+    }
+
+    @Test
+    void chatWithEmptyMessageThrowsException() {
+        // Verify input validation: empty string message should be rejected
+        var mockChatClient = mock(ChatClient.class);
+        var mockBuilder = mock(ChatClient.Builder.class);
+        var service = new ChatService(mockChatClient, mockBuilder);
+
+        assertThatThrownBy(() -> service.chat("", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Message cannot be blank");
     }
 }

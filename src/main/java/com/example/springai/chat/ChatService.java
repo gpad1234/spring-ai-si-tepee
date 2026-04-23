@@ -10,12 +10,25 @@ import org.springframework.util.StringUtils;
 /**
  * Pattern 1 — Simple Chat Service
  *
- * <p>Key decisions:
+ * <p>Handles single-turn Q&A without conversation history.
+ *
+ * <p>Key architectural decisions:
  * <ul>
- *   <li>Prompt text lives in {@code src/main/resources/prompts/chat.st} — never inline long strings.</li>
- *   <li>The {@link ChatClient} bean from {@code AiConfig} carries the default system prompt;
- *       callers may override it per-request.</li>
- *   <li>Return plain {@code String}; callers decide serialization.</li>
+ *   <li><strong>Prompt text lives in {@code src/main/resources/prompts/chat.st}</strong> —
+ *       Never inline long strings. Enables editing prompts without recompilation.</li>
+ *   <li><strong>System prompt override per-request</strong> — Callers may provide a custom
+ *       system prompt; null means use the default from {@code AiConfig}.</li>
+ *   <li><strong>Returns plain String</strong> — Callers decide serialization and error handling.
+ *       This keeps the service focused on orchestration.</li>
+ *   <li><strong>ChatClient is injected</strong> — Never call ChatModel directly; always go through
+ *       the higher-level ChatClient which handles retries, streaming setup, etc.</li>
+ * </ul>
+ *
+ * <p>Production considerations:
+ * <ul>
+ *   <li>Add timeout configuration: {@code spring.ai.anthropic.chat.options.timeout=30s}</li>
+ *   <li>Add rate limiting if exposed to untrusted callers (Claude has token-per-minute limits).</li>
+ *   <li>Consider adding span propagation for distributed tracing (Micrometer/Spring Cloud Sleuth).</li>
  * </ul>
  */
 @Service
@@ -35,14 +48,27 @@ public class ChatService {
     /**
      * Send a message and return the model's text reply.
      *
-     * @param message      the user message
-     * @param systemPrompt optional per-request system prompt; null uses the default
+     * <p>If {@code systemPrompt} is provided and non-empty, it overrides the default
+     * system prompt for this request only. Otherwise, uses the default system prompt
+     * configured in {@code AiConfig}.
+     *
+     * @param message      the user message (required, non-blank)
+     * @param systemPrompt optional per-request system prompt; null or blank uses default
+     * @return the assistant's text reply
+     * @throws IllegalArgumentException if message is blank
      */
     public String chat(String message, String systemPrompt) {
+        // Validate input — message must be provided
+        if (!StringUtils.hasText(message)) {
+            throw new IllegalArgumentException("Message cannot be blank");
+        }
+
+        // Choose which ChatClient to use: default or override with custom system prompt
         ChatClient client = StringUtils.hasText(systemPrompt)
                 ? chatClientBuilder.defaultSystem(systemPrompt).build()
                 : chatClient;
 
+        // Call Claude and return the text content
         return client.prompt()
                 .user(message)
                 .call()

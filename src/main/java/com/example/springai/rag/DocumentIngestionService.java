@@ -38,7 +38,13 @@ public class DocumentIngestionService {
 
     public DocumentIngestionService(VectorStore vectorStore) {
         this.vectorStore = vectorStore;
-        this.splitter = new TokenTextSplitter(CHUNK_SIZE, CHUNK_OVERLAP, 5, 10_000, true);
+        this.splitter = TokenTextSplitter.builder()
+                .withChunkSize(CHUNK_SIZE)
+                .withMinChunkSizeChars(CHUNK_OVERLAP)
+                .withMinChunkLengthToEmbed(5)
+                .withMaxNumChunks(10_000)
+                .withKeepSeparator(true)
+                .build();
     }
 
     /**
