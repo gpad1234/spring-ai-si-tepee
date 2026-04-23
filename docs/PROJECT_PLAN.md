@@ -261,6 +261,63 @@ These items are scoped out of v1 but are natural next steps.
 
 ---
 
+## Phase 7 — MCP Apps Enablement (Pattern 6)
+
+**Goal:** Add MCP Apps as an additive integration path (tool + embedded UI resource) without breaking existing REST patterns or the Next.js frontend.
+
+### Tasks
+
+#### 7.1 Branching and Upgrade Guardrails
+| # | Task | Notes |
+|---|---|---|
+| 7.1.1 | Create dedicated feature branch for MCP work | Keep upgrade risk isolated from mainline |
+| 7.1.2 | Upgrade Spring AI to MCP metadata-capable line (2.0.0-M3+) | Required for MCP Apps tool/resource metadata |
+| 7.1.3 | Verify starter/artifact names after version bump | Spring AI artifact naming changed across versions |
+| 7.1.4 | Run full baseline tests after upgrade (`mvn test`) | Detect regressions before MCP code is added |
+| 7.1.5 | Align Boot/Spring runtime with MCP transport requirements | Avoid `NoSuchMethodError` on Spring Web `HttpHeaders` methods at `/mcp` runtime |
+
+#### 7.2 MCP Server Skeleton
+| # | Task | Notes |
+|---|---|---|
+| 7.2.1 | Add MCP server dependency/configuration | Configure Streamable HTTP transport |
+| 7.2.2 | Add MCP endpoint config and dedicated port | Target `/mcp` on port `3001` |
+| 7.2.3 | Create package boundary `com.example.springai.mcpapp` | Keep Pattern 6 isolated from Patterns 1-5 |
+| 7.2.4 | Implement minimal `@McpResource` method returning static HTML | MIME must be `text/html;profile=mcp-app` |
+| 7.2.5 | Implement minimal `@McpTool` method referencing resource URI metadata | `meta.ui.resourceUri -> ui://chat/rich-chat.html` |
+
+#### 7.3 Rich App Iteration
+| # | Task | Notes |
+|---|---|---|
+| 7.3.1 | Add initial app resource file `src/main/resources/app/rich-chat.html` | Start with minimal shell |
+| 7.3.2 | Wire ext-apps bridge for host communication | Support `updateModelContext()` first |
+| 7.3.3 | Add CSP metadata provider for explicit allowed domains | Default deny, strict allowlist |
+| 7.3.4 | Add optional `sendMessage()` and `callServerTool()` integration hooks | Needed for richer hybrid workflows |
+
+#### 7.4 Validation and Compatibility
+| # | Task | Notes |
+|---|---|---|
+| 7.4.1 | Validate tool discovery from MCP client | Tool appears and is invokable |
+| 7.4.2 | Validate resource rendering in host | UI loads from MCP resource URI |
+| 7.4.3 | Validate context update roundtrip | Host responses reflect latest UI state |
+| 7.4.4 | Document host-specific setup | MCP Jam direct; Claude Desktop via proxy tooling if needed |
+| 7.4.5 | Re-run existing REST endpoint tests | Ensure Patterns 1-5 remain unaffected |
+
+### Acceptance Criteria
+
+- MCP client can discover and invoke `open-rich-chat`.
+- Host can render `ui://chat/rich-chat.html` as an MCP app.
+- UI-originated context updates influence the next assistant response.
+- Existing backend tests still pass (`mvn test`).
+- Existing Next.js UI still builds and runs (`npm run build` in `ui/`).
+
+### Out of Scope for Phase 7
+
+- Replacing current Next.js UI with MCP app UI.
+- Adding production authz/authn around MCP transport.
+- Multi-app orchestration across multiple MCP servers.
+
+---
+
 ## Risk Register
 
 | Risk | Likelihood | Impact | Mitigation |
@@ -273,6 +330,7 @@ These items are scoped out of v1 but are natural next steps.
 | CORS misconfiguration between UI and API | Medium | Medium | Use Next.js proxy in dev; explicit `CorsConfigurationSource` bean in prod |
 | SSE connection drops on mobile / proxies | Medium | Low | Add reconnect logic in `useStream` hook with exponential backoff |
 | Tailwind v4 / shadcn incompatibility | Low | Medium | Pin exact versions; upgrade only after checking shadcn release notes |
+| MCP preview runtime mismatch (`/mcp` returns 500) | High (current) | High | Upgrade runtime line for MCP preview to a Spring Web version compatible with Spring AI MCP 2.0 transport expectations |
 
 ---
 

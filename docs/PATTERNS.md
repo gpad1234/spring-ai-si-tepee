@@ -180,3 +180,61 @@ Tools that perform write operations (DB inserts, external API calls) should incl
 
 - `src/main/java/com/example/springai/tools/BuiltInTools.java`
 - `src/main/java/com/example/springai/tools/ToolCallingService.java`
+
+---
+
+# Pattern 6 — MCP Apps (Design)
+
+## When to Use
+
+Use when chat alone is not the best interaction mode and users need embedded UI controls (forms, maps, selectors, dashboards) directly in the assistant host.
+
+## Core Building Blocks
+
+| Element | Role |
+|---|---|
+| `@McpTool` | Declares an assistant-invokable tool that opens the app |
+| `@McpResource` | Serves the HTML app resource |
+| `meta.ui.resourceUri` | Connects tool invocation to the UI resource |
+| `meta.ui.csp.resourceDomains` | Explicit CSP allowlist for external UI assets |
+
+## Design Constraints for This Repository
+
+- Keep existing Patterns 1-5 unchanged and operational.
+- Introduce MCP Apps as an additive capability, not a replacement for Next.js UI.
+- Stage Spring AI version migration separately before implementation.
+
+## Initial Contracts (Proposed)
+
+- Tool name: `open-rich-chat`
+- Tool name: `rich-chat-respond`
+- Resource URI: `ui://chat/rich-chat.html`
+- Resource MIME type: `text/html;profile=mcp-app`
+- Transport target: Streamable HTTP on `/mcp`
+
+## Request Flow
+
+```
+User asks host to open rich chat
+  → Host invokes MCP tool (open-rich-chat)
+    → Tool metadata points to ui://chat/rich-chat.html
+      → Host renders resource as MCP App
+        → UI updates model context via ext-apps bridge
+          → Host invokes MCP tool (rich-chat-respond)
+            → Tool delegates to existing ChatService
+              → Assistant responses use latest UI state + backend chat behavior
+```
+
+## Risks and Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Spring AI version drift | Isolate migration in a dedicated branch and run full test suite |
+| Host compatibility differences | Document per-host behavior (Claude Desktop, MCP Jam, others) |
+| CSP too permissive | Default deny, minimal allowlist only |
+
+## Code Reference (Target)
+
+- `src/main/java/com/example/springai/mcpapp/RichChatApp.java`
+- `src/mcp-preview/java/com/example/springai/mcpapp/RichChatMcpApp.java`
+- `src/mcp-preview/resources/app/rich-chat.html`

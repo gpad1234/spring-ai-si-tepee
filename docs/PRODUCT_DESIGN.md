@@ -519,4 +519,144 @@ Add a `CorsConfigurationSource` bean in `AiConfig` allowing the UI origin. Set
 
 ---
 
+## 9. MCP Apps Design Blueprint (Phase 0: Design Only)
+
+### 9.1 Goal
+
+Blend chat with an embedded, rich interaction surface using MCP Apps, while preserving the current HTTP API patterns and the existing Next.js web UI.
+
+Primary outcome:
+- Add a sixth reusable pattern for MCP Apps without breaking Patterns 1-5.
+
+### 9.2 Non-Goals
+
+- No runtime migration in this phase.
+- No forced replacement of the existing Next.js UI.
+- No protocol-level compatibility hacks beyond documented host constraints.
+
+### 9.3 Version and Compatibility Constraints
+
+Current repository baseline:
+- Spring AI: 1.0.0
+- Spring Boot: 3.3.0
+
+MCP Apps requirement from Spring guidance:
+- Spring AI 2.0.0-M3 or newer for MCP metadata support on tools and resources.
+
+Design implication:
+- MCP Apps are a parallel capability that should be introduced behind a feature branch and validated in isolation before merging.
+
+### 9.4 Experience Model
+
+The user can ask for a workflow in chat (for example, "open rich chat workspace"), and the assistant opens an embedded app panel that supports direct interaction.
+
+Hybrid interaction loop:
+1. User asks in chat.
+2. Assistant invokes MCP tool.
+3. Host renders MCP app resource.
+4. User interacts in UI.
+5. UI updates model context with structured state.
+6. Assistant answers with awareness of latest UI state.
+
+### 9.5 Architecture (Target)
+
+```
+MCP Host (Claude Desktop / MCP Jam)
+    |
+    | streamable HTTP
+    v
+Spring Boot MCP Server
+    |- @McpTool method: open-rich-chat
+    |    meta.ui.resourceUri -> ui://chat/rich-chat.html
+    |
+    |- @McpResource method: rich chat HTML app
+         mimeType: text/html;profile=mcp-app
+         meta.ui.csp.resourceDomains: allowed UI script origins
+```
+
+Design principles:
+- Keep MCP app resource serving in its own package (mcpapp/).
+- Keep business logic reusable by existing services (chat/, tools/, rag/).
+- Avoid duplicated orchestration logic between REST controllers and MCP handlers.
+
+### 9.6 Pattern 6 Definition
+
+Pattern name:
+- Pattern 6 - MCP Apps (Chat + Embedded Rich UI)
+
+Core elements:
+- MCP tool that advertises a UI resource.
+- MCP resource that serves HTML/JS/CSS.
+- UI client using ext-apps integration to:
+  - update model context
+  - send message
+  - optionally call server tools
+
+### 9.7 Contract Design
+
+Tool contract:
+- Name: open-rich-chat
+- Description: Opens the rich chat MCP app and initializes assistant-facing context.
+- Return: A short confirmation string for host logs.
+
+Resource contract:
+- URI: ui://chat/rich-chat.html
+- MIME type: text/html;profile=mcp-app
+- CSP metadata: allow only required resource domains.
+
+Context contract from UI to host:
+- State payload represented as text summaries and lightweight structured fields.
+- Each update should be idempotent and include a compact "current state" summary.
+
+### 9.8 Security and Safety Design
+
+- CSP default deny; explicit allowlist only.
+- No inline secrets in HTML or JavaScript.
+- Tool descriptions must clearly state purpose and expected side effects.
+- Host and server logs should avoid storing sensitive free-form user text where possible.
+
+### 9.9 Operational Design
+
+- Preferred transport: streamable HTTP.
+- Default MCP server port target: 3001.
+- Endpoint target: /mcp.
+- Existing REST API remains on current port for web UI workflows.
+
+### 9.10 Testing Design
+
+Minimum acceptance test set before merge:
+1. Tool discovery test: host sees open-rich-chat.
+2. Resource resolution test: host can load ui://chat/rich-chat.html.
+3. Context update test: UI update is reflected in subsequent assistant turn.
+4. Regression test: existing REST endpoints continue to pass current tests.
+
+### 9.11 Delivery Plan
+
+Phase 0 - Design (current)
+- Finalize contracts, package boundaries, and migration prerequisites.
+
+Phase 1 - Enablement
+- Upgrade Spring AI line to MCP-app-capable version in a dedicated branch.
+- Add MCP server dependency and streamable transport config.
+
+Phase 2 - Skeleton
+- Implement minimal @McpTool and @McpResource pair.
+- Ship static "hello" MCP app for host validation.
+
+Phase 3 - Rich Chat App
+- Implement rich chat UI resource with context update flow.
+- Wire callServerTool/sendMessage where needed.
+
+Phase 4 - Hardening
+- Add CSP tightening, structured logging, and compatibility notes per host.
+- Add docs and reproducible run instructions.
+
+### 9.12 Exit Criteria for Design Sign-Off
+
+- Pattern 6 responsibilities are clear and non-overlapping with Patterns 1-5.
+- Tool/resource/context contracts are frozen for first implementation.
+- Migration risk (Spring AI version change) is explicitly acknowledged and staged.
+
+---
+
 *Last updated: April 2026*
