@@ -31,13 +31,13 @@ public class RagController {
      * Upload a plain-text document to the vector store.
      */
     @PostMapping("/ingest")
-    public ResponseEntity<Void> ingest(
+    public ResponseEntity<IngestResponse> ingest(
             @RequestParam("file") MultipartFile file) throws IOException {
         var resource = new ByteArrayResource(file.getBytes()) {
             @Override public String getFilename() { return file.getOriginalFilename(); }
         };
-        ingestionService.ingest(resource, file.getOriginalFilename());
-        return ResponseEntity.accepted().build();
+        int chunks = ingestionService.ingest(resource, file.getOriginalFilename());
+        return ResponseEntity.accepted().body(new IngestResponse("Ingested " + file.getOriginalFilename(), chunks));
     }
 
     /**
@@ -50,6 +50,7 @@ public class RagController {
         return ResponseEntity.ok(new AskResponse(answer));
     }
 
+    public record IngestResponse(String message, int chunks) {}
     public record AskRequest(@NotBlank String question) {}
     public record AskResponse(String answer) {}
 }

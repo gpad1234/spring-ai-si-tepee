@@ -32,10 +32,10 @@ public class StructuredOutputService {
      * Extracted person information. All fields nullable — the model may not find them.
      */
     public record PersonInfo(
-            String fullName,
+            String name,
             Integer age,
             String email,
-            String location
+            String city
     ) {}
 
     /**

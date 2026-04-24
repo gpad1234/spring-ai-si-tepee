@@ -34,5 +34,5 @@ public class ToolCallingController {
     }
 
     public record ToolChatRequest(@NotBlank String message) {}
-    public record ToolChatResponse(String reply) {}
+    public record ToolChatResponse(String response) {}
 }

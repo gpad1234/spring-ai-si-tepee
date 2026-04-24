@@ -1,7 +1,6 @@
 package com.example.springai.structured;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.chat.client.ChatClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,10 +18,10 @@ class StructuredOutputServiceTest {
     void personInfoRecordHasExpectedFields() {
         // Verify the record contract hasn't silently changed
         var info = new StructuredOutputService.PersonInfo("Alice", 30, "alice@example.com", "London");
-        assertThat(info.fullName()).isEqualTo("Alice");
+        assertThat(info.name()).isEqualTo("Alice");
         assertThat(info.age()).isEqualTo(30);
         assertThat(info.email()).isEqualTo("alice@example.com");
-        assertThat(info.location()).isEqualTo("London");
+        assertThat(info.city()).isEqualTo("London");
     }
 
     @Test

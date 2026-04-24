@@ -106,8 +106,8 @@ INGEST (one-time / batch):
   Resource → TextReader → TokenTextSplitter → EmbeddingModel → VectorStore
 
 QUERY (per request):
-  Question → QuestionAnswerAdvisor → VectorStore.similaritySearch()
-           → Retrieved chunks injected into prompt → Claude → Answer
+  Question → VectorStore.similaritySearch()
+           → Retrieved chunks injected into system prompt → ChatClient → Answer
 ```
 
 ## Chunk Tuning

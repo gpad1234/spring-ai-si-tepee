@@ -53,10 +53,15 @@ curl -N -X POST http://localhost:8080/api/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "Explain RAG in 3 sentences"}'
 
-# Entity extraction
+# Entity extraction — person
 curl -X POST http://localhost:8080/api/extract/person \
   -H "Content-Type: application/json" \
   -d '{"text": "Alice Smith, 32, from Berlin. Reach her at alice@example.com"}'
+
+# Entity extraction — sentiment
+curl -X POST http://localhost:8080/api/extract/sentiment \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This framework is fantastic. Saved us weeks of work."}'
 
 # RAG — ingest a document, then ask
 curl -X POST http://localhost:8080/api/rag/ingest \
@@ -105,9 +110,22 @@ See the Vector Store Swap section in [docs/PATTERNS.md](PATTERNS.md#vector-store
 
 ## MCP Apps Preview (Pattern 6)
 
-Use this when you want to run the profile-scoped MCP server and rich UI resource.
+Use this when you want to run the MCP server and rich UI resource.
+
+### Recommended Runtime (Boot 4 Preview Shim)
+
+Use the dedicated runtime module for MCP transport compatibility:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+mvn -f mcp-preview-runtime/pom.xml spring-boot:run -Dspring-boot.run.arguments="--server.port=3001"
+```
+
+MCP endpoint: `http://localhost:3001/mcp`
 
 ### Start MCP Preview Server
+
+This profile is still useful for source-level validation in the main project:
 
 Run with the MCP preview profile and override the port to 3001:
 
@@ -133,11 +151,11 @@ Impact:
 - Requests to `/mcp` return HTTP 500 in this mixed-version state.
 
 Workaround for now:
-- Use `mvn test -Pmcp-apps-preview` to validate MCP wiring, contracts, and preview tests.
-- Continue using the standard REST endpoints/UI for interactive manual testing.
+- Use `mvn test -Pmcp-apps-preview` to validate MCP wiring, contracts, and preview tests in the main module.
+- Use `mcp-preview-runtime/pom.xml` (Boot 4) for live MCP host/manual endpoint testing.
 
 Resolution path:
-- Move MCP preview runtime to a Spring Boot/Spring Framework line compatible with Spring AI MCP 2.0.0-M3 transport APIs, then re-run manual `/mcp` smoke tests.
+- Keep mainline on Boot 3.3 for current app stability and run MCP host tests via the dedicated Boot 4 preview runtime module until a full-stack upgrade is scheduled.
 
 ### Validate MCP Preview Profile
 

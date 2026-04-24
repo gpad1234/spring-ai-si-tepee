@@ -13,11 +13,10 @@ export interface ExtractPersonResponse {
   email: string | null;
   city:  string | null;
 }
-export interface ExtractProductResponse {
-  name:        string | null;
-  price:       number | null;
-  category:    string | null;
-  description: string | null;
+export interface ExtractSentimentResponse {
+  sentiment:       string;
+  confidenceScore: number;
+  reasoning:       string;
 }
 
 export interface RagIngestResponse { message: string; chunks: number; }
@@ -62,8 +61,8 @@ export async function postExtractPerson(text: string): Promise<ExtractPersonResp
   return res.json();
 }
 
-export async function postExtractProduct(text: string): Promise<ExtractProductResponse> {
-  const res = await fetch(`${BASE}/api/extract/product`, {
+export async function postExtractSentiment(text: string): Promise<ExtractSentimentResponse> {
+  const res = await fetch(`${BASE}/api/extract/sentiment`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),

@@ -53,21 +53,23 @@ public class DocumentIngestionService {
      * @param resource the document resource (file, classpath, URL)
      * @param source   metadata label used for citations (e.g. "policy-2024.pdf")
      */
-    public void ingest(Resource resource, String source) {
+    public int ingest(Resource resource, String source) {
         var reader = new TextReader(resource);
         reader.getCustomMetadata().put("source", source);
 
         List<Document> docs = reader.get();
         List<Document> chunks = splitter.apply(docs);
         vectorStore.add(chunks);
+        return chunks.size();
     }
 
     /**
      * Ingest raw text content directly (e.g. from a database or API).
      */
-    public void ingestText(String content, String source) {
+    public int ingestText(String content, String source) {
         var document = new Document(content, java.util.Map.of("source", source));
         List<Document> chunks = splitter.apply(List.of(document));
         vectorStore.add(chunks);
+        return chunks.size();
     }
 }

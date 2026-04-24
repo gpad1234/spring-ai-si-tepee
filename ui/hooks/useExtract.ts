@@ -1,27 +1,27 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { postExtractPerson, postExtractProduct } from "@/lib/api";
+import { postExtractPerson, postExtractSentiment } from "@/lib/api";
 
 export function useExtract() {
   const personMutation = useMutation({
     mutationFn: (text: string) => postExtractPerson(text),
   });
 
-  const productMutation = useMutation({
-    mutationFn: (text: string) => postExtractProduct(text),
+  const sentimentMutation = useMutation({
+    mutationFn: (text: string) => postExtractSentiment(text),
   });
 
   return {
-    extractPerson:  personMutation.mutate,
-    personData:     personMutation.data,
-    personPending:  personMutation.isPending,
-    personError:    personMutation.error,
+    extractPerson:    personMutation.mutate,
+    personData:       personMutation.data,
+    personPending:    personMutation.isPending,
+    personError:      personMutation.error,
 
-    extractProduct: productMutation.mutate,
-    productData:    productMutation.data,
-    productPending: productMutation.isPending,
-    productError:   productMutation.error,
+    extractSentiment: sentimentMutation.mutate,
+    sentimentData:    sentimentMutation.data,
+    sentimentPending: sentimentMutation.isPending,
+    sentimentError:   sentimentMutation.error,
 
-    reset: () => { personMutation.reset(); productMutation.reset(); },
+    reset: () => { personMutation.reset(); sentimentMutation.reset(); },
   };
 }

@@ -4,11 +4,11 @@ import { useExtract } from "@/hooks/useExtract";
 import { cn } from "@/lib/cn";
 
 const SAMPLES = {
-  person:  "Meet Sarah Chen, 34, a software engineer from Austin. You can reach her at sarah.chen@example.com.",
-  product: "The UltraBook Pro X1 is a premium 14-inch laptop priced at $1,299.99 in the Electronics category. Features include a 12-core CPU, 32GB RAM, and a stunning OLED display.",
+  person:    "Meet Sarah Chen, 34, a software engineer from Austin. You can reach her at sarah.chen@example.com.",
+  sentiment: "The new framework is incredibly intuitive and well-documented. It saved us weeks of boilerplate and the community support has been fantastic.",
 };
 
-type Mode = "person" | "product";
+type Mode = "person" | "sentiment";
 
 function FieldBadge({ label, value }: { label: string; value: string | number | null }) {
   return (
@@ -25,16 +25,16 @@ export default function ExtractPage() {
   const [mode, setMode] = useState<Mode>("person");
   const [text, setText] = useState(SAMPLES.person);
   const { extractPerson, personData, personPending, personError,
-          extractProduct, productData, productPending, productError } = useExtract();
+          extractSentiment, sentimentData, sentimentPending, sentimentError } = useExtract();
 
-  const isPending = mode === "person" ? personPending : productPending;
-  const error     = mode === "person" ? personError   : productError;
-  const data      = mode === "person" ? personData    : productData;
+  const isPending = mode === "person" ? personPending : sentimentPending;
+  const error     = mode === "person" ? personError   : sentimentError;
+  const data      = mode === "person" ? personData    : sentimentData;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === "person") extractPerson(text);
-    else extractProduct(text);
+    else extractSentiment(text);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function ExtractPage() {
 
       {/* Mode toggle */}
       <div className="flex gap-2">
-        {(["person", "product"] as Mode[]).map((m) => (
+        {(["person", "sentiment"] as Mode[]).map((m) => (
           <button
             key={m}
             onClick={() => { setMode(m); setText(SAMPLES[m]); }}

@@ -6,8 +6,6 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -33,11 +31,10 @@ class DocumentIngestionServiceTest {
 
         String longText = "Spring AI provides abstractions for AI engineering. ".repeat(50);
 
-        // Act — should not throw
-        service.ingestText(longText, "test-source");
+        // Act
+        int chunkCount = service.ingestText(longText, "test-source");
 
-        // Assert: documents were stored (vector store accepts the call)
-        // For deeper assertions, query the vector store after ingestion
-        assertThat(vectorStore).isNotNull();
+        // Assert: at least one chunk was produced and stored
+        assertThat(chunkCount).isGreaterThan(0);
     }
 }
